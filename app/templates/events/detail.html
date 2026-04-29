@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block content %}
+<div class="flex items-start justify-between mb-6">
+    <div>
+        <h1 class="text-3xl font-bold">{{ event.title }}</h1>
+        <div class="text-slate-500 mt-1">
+            {{ event.start_at.strftime("%b %d, %Y · %H:%M") }} – {{ event.end_at.strftime("%H:%M") }}
+            {% if event.location %} · {{ event.location }}{% endif %}
+        </div>
+    </div>
+    <div class="flex gap-2">
+        <a href="/events/{{ event.id }}/edit" class="px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50 text-sm">Edit</a>
+        <form method="post" action="/events/{{ event.id }}/delete" onsubmit="return confirm('Delete this event and all its sessions?')">
+            <button type="submit" class="px-3 py-1.5 border border-red-300 text-red-600 rounded hover:bg-red-50 text-sm">Delete</button>
+        </form>
+    </div>
+</div>
+
+{% if event.description %}
+<div class="bg-white p-6 rounded-lg border border-slate-200 mb-6">
+    <p class="text-slate-700 whitespace-pre-wrap">{{ event.description }}</p>
+</div>
+{% endif %}
+
+{# Broadcast and sharing actions (admins only) #}
+{% if user.role.value == "admin" %}
+<div class="bg-white rounded-lg border border-slate-200 mb-6 p-6">
+    <h2 class="font-semibold mb-3">Promote this event</h2>
+    <div class="flex flex-wrap gap-2 mb-3">
+        <button hx-post="/events/{{ event.id }}/broadcast-email"
+                hx-target="#broadcast-status"
+                hx-swap="innerHTML"
+                hx-confirm="Send this event to all users by email?"
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+            📧 Email all users
+        </button>
+        <button hx-post="/events/{{ event.id }}/post-social"
+                hx-target="#broadcast-status"
+                hx-swap="innerHTML"
+                hx-confirm="Post this event to all configured social platforms?"
+                class="px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-900 text-sm">
+            📣 Post to social
+        </button>
+        <a href="/events/{{ event.id }}/public" target="_blank"
+           class="px-4 py-2 border border-slate-300 rounded hover:bg-slate-50 text-sm">
+            🔗 Open public page
+        </a>
+    </div>
+    <div id="broadcast-status"></div>
+    <div class="text-xs text-slate-500 mt-3">
+        Public link: <code class="bg-slate-100 px-1 rounded">/events/{{ event.id }}/public</code>
+        — share this anywhere; it has Open Graph previews and share buttons.
+    </div>
+</div>
+{% endif %}
+
+<div class="bg-white rounded-lg border border-slate-200">
+    <div class="px-6 py-4 border-b border-slate-200">
+        <h2 class="font-semibold">Sessions</h2>
+    </div>
+
+    <div id="sessions-list">
+        {% include "events/_sessions_list.html" %}
+    </div>
+
+    <div class="border-t border-slate-200 p-6">
+        <h3 class="font-medium mb-3">Add session</h3>
+        <form hx-post="/events/{{ event.id }}/sessions" hx-target="#sessions-list" hx-swap="innerHTML" hx-on::after-request="if(event.detail.successful) this.reset()" class="grid grid-cols-2 gap-3">
+            <input type="text" name="title" required placeholder="Session title" class="px-3 py-2 border border-slate-300 rounded col-span-2">
+            <input type="text" name="speaker" placeholder="Speaker (optional)" class="px-3 py-2 border border-slate-300 rounded col-span-2">
+            <input type="datetime-local" name="start_at" required class="px-3 py-2 border border-slate-300 rounded">
+            <input type="datetime-local" name="end_at" required class="px-3 py-2 border border-slate-300 rounded">
+            <textarea name="description" rows="2" placeholder="Description (optional)" class="px-3 py-2 border border-slate-300 rounded col-span-2"></textarea>
+            <button type="submit" class="col-span-2 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Add session</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.title }} · {{ site_name }}</title>
+
+    {# Open Graph tags - for previews on Facebook, LinkedIn, WhatsApp, Slack, iMessage, etc. #}
+    <meta property="og:type" content="event">
+    <meta property="og:title" content="{{ event.title }}">
+    <meta property="og:description" content="{{ event.description[:200] if event.description else event.start_at.strftime('%B %d, %Y') }}">
+    <meta property="og:url" content="{{ public_url }}">
+    <meta property="og:site_name" content="{{ site_name }}">
+
+    {# Twitter Card tags - for previews on Twitter/X #}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ event.title }}">
+    <meta name="twitter:description" content="{{ event.description[:200] if event.description else event.start_at.strftime('%B %d, %Y') }}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <main class="max-w-2xl mx-auto px-6 py-12">
+        <div class="bg-white rounded-lg border border-slate-200 p-8">
+            <div class="text-sm text-blue-600 font-medium mb-2">{{ event.start_at.strftime("%A, %B %d, %Y") }}</div>
+            <h1 class="text-3xl font-bold mb-4">{{ event.title }}</h1>
+
+            <div class="space-y-2 text-slate-700 mb-6">
+                <div class="flex gap-2">
+                    <span class="text-slate-400">🕐</span>
+                    <span>{{ event.start_at.strftime("%H:%M") }} – {{ event.end_at.strftime("%H:%M") }}</span>
+                </div>
+                {% if event.location %}
+                <div class="flex gap-2">
+                    <span class="text-slate-400">📍</span>
+                    <span>{{ event.location }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if event.description %}
+            <div class="prose text-slate-700 whitespace-pre-wrap mb-6">{{ event.description }}</div>
+            {% endif %}
+
+            {% if event.sessions %}
+            <div class="mt-8 border-t border-slate-200 pt-6">
+                <h2 class="font-semibold mb-3">Sessions</h2>
+                <div class="space-y-3">
+                    {% for session in event.sessions %}
+                    <div class="border-l-2 border-blue-200 pl-3">
+                        <div class="font-medium">{{ session.title }}</div>
+                        <div class="text-sm text-slate-500">
+                            {{ session.start_at.strftime("%H:%M") }}–{{ session.end_at.strftime("%H:%M") }}
+                            {% if session.speaker %} · {{ session.speaker }}{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# Share buttons - native share URLs, no APIs required #}
+            <div class="mt-8 border-t border-slate-200 pt-6">
+                <div class="text-sm font-medium text-slate-700 mb-3">Share this event</div>
+                <div class="flex flex-wrap gap-2">
+                    <a target="_blank" rel="noopener"
+                       href="https://twitter.com/intent/tweet?text={{ event.title|urlencode }}&url={{ public_url|urlencode }}"
+                       class="px-3 py-2 bg-black text-white rounded text-sm hover:opacity-80">𝕏 Twitter</a>
+                    <a target="_blank" rel="noopener"
+                       href="https://www.linkedin.com/sharing/share-offsite/?url={{ public_url|urlencode }}"
+                       class="px-3 py-2 bg-[#0a66c2] text-white rounded text-sm hover:opacity-80">in LinkedIn</a>
+                    <a target="_blank" rel="noopener"
+                       href="https://www.facebook.com/sharer/sharer.php?u={{ public_url|urlencode }}"
+                       class="px-3 py-2 bg-[#1877f2] text-white rounded text-sm hover:opacity-80">f Facebook</a>
+                    <a target="_blank" rel="noopener"
+                       href="https://wa.me/?text={{ (event.title + ' ' + public_url)|urlencode }}"
+                       class="px-3 py-2 bg-[#25d366] text-white rounded text-sm hover:opacity-80">WhatsApp</a>
+                    <a href="mailto:?subject={{ event.title|urlencode }}&body={{ public_url|urlencode }}"
+                       class="px-3 py-2 bg-slate-600 text-white rounded text-sm hover:opacity-80">Email</a>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-center text-sm text-slate-500 mt-6">{{ site_name }}</p>
+    </main>
+</body>
+</html>

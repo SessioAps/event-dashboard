@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white p-6 rounded-lg border border-slate-200">
+        <div class="text-sm text-slate-500">Total events</div>
+        <div class="text-3xl font-bold mt-1">{{ stats.event_count }}</div>
+    </div>
+    <div class="bg-white p-6 rounded-lg border border-slate-200">
+        <div class="text-sm text-slate-500">Upcoming events</div>
+        <div class="text-3xl font-bold mt-1">{{ stats.upcoming_count }}</div>
+    </div>
+    <div class="bg-white p-6 rounded-lg border border-slate-200">
+        <div class="text-sm text-slate-500">Total sessions</div>
+        <div class="text-3xl font-bold mt-1">{{ stats.session_count }}</div>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg border border-slate-200">
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <h2 class="font-semibold">Recent events</h2>
+        <a href="/events/new" class="text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700">+ New event</a>
+    </div>
+    <div class="divide-y divide-slate-200">
+        {% for event in recent_events %}
+        <a href="/events/{{ event.id }}" class="block px-6 py-3 hover:bg-slate-50">
+            <div class="font-medium">{{ event.title }}</div>
+            <div class="text-sm text-slate-500">{{ event.start_at.strftime("%b %d, %Y · %H:%M") }}{% if event.location %} · {{ event.location }}{% endif %}</div>
+        </a>
+        {% else %}
+        <div class="px-6 py-8 text-center text-slate-500">No events yet. <a href="/events/new" class="text-blue-600">Create one</a>.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

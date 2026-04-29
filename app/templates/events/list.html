@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold">Events</h1>
+    <a href="/events/new" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ New event</a>
+</div>
+
+<div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-slate-50 text-left text-sm text-slate-600">
+            <tr>
+                <th class="px-6 py-3 font-medium">Title</th>
+                <th class="px-6 py-3 font-medium">Starts</th>
+                <th class="px-6 py-3 font-medium">Location</th>
+                <th class="px-6 py-3 font-medium">Sessions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+            {% for event in events %}
+            <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/events/{{ event.id }}'">
+                <td class="px-6 py-3 font-medium">{{ event.title }}</td>
+                <td class="px-6 py-3 text-slate-600">{{ event.start_at.strftime("%b %d, %Y · %H:%M") }}</td>
+                <td class="px-6 py-3 text-slate-600">{{ event.location or "—" }}</td>
+                <td class="px-6 py-3 text-slate-600">{{ event.sessions|length }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="px-6 py-12 text-center text-slate-500">No events yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

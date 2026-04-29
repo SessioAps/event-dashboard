@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Event Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+    {% if user %}
+    <nav class="bg-white border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="/" class="font-bold text-lg">Event Dashboard</a>
+                <a href="/events" class="text-slate-600 hover:text-slate-900">Events</a>
+                <a href="/calendar" class="text-slate-600 hover:text-slate-900">Calendar</a>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+                <span class="text-slate-500">{{ user.email }} ({{ user.role.value }})</span>
+                <a href="/logout" class="text-slate-600 hover:text-slate-900">Logout</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="max-w-6xl mx-auto px-6 py-8">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
