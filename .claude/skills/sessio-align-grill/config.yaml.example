@@ -1,0 +1,14 @@
+# sessio-align-grill config — copy to config.yaml and adjust.
+# config.yaml is gitignored (machine-local path).
+
+# Path to a sessio-docs clone. Auto-detected as ../sessio-docs/ on first run if not set.
+sessio_docs_path: ../sessio-docs
+
+# Freshness of the spec each run reads:
+#   pull-on-run — git fetch + pull --rebase before reading (recommended; default)
+#   pinned-tag  — read at a fixed git tag (set pinned_tag below)
+#   manual      — read whatever is in the working tree (you manage syncs)
+freshness: pull-on-run
+
+# Only relevant if freshness == pinned-tag.
+pinned_tag: ~

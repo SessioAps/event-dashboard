@@ -48,3 +48,6 @@ htmlcov/
 
 # Uploaded files (when we add image uploads later)
 app/static/uploads/
+
+# sessio-align-grill local config (machine-specific path to sessio-docs clone)
+.claude/skills/sessio-align-grill/config.yaml
