@@ -3,19 +3,59 @@
 {% block content %}
 <h1 class="text-2xl font-bold mb-6">{% if event %}Edit event{% else %}New event{% endif %}</h1>
 
-<form method="post" action="{% if event %}/events/{{ event.id }}/edit{% else %}/events{% endif %}" class="bg-white p-6 rounded-lg border border-slate-200 space-y-4 max-w-2xl">
+<form method="post" action="{% if event %}/events/{{ event.id }}/edit{% else %}/events{% endif %}" class="bg-white p-6 rounded-lg border border-slate-200 space-y-5 max-w-2xl">
+
     <div>
         <label class="block text-sm font-medium mb-1">Title</label>
         <input type="text" name="title" required value="{{ event.title if event else '' }}" class="w-full px-3 py-2 border border-slate-300 rounded">
     </div>
+
     <div>
         <label class="block text-sm font-medium mb-1">Description</label>
         <textarea name="description" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded">{{ event.description if event else '' }}</textarea>
     </div>
+
     <div>
-        <label class="block text-sm font-medium mb-1">Location</label>
-        <input type="text" name="location" value="{{ event.location if event else '' }}" class="w-full px-3 py-2 border border-slate-300 rounded">
+        <label class="block text-sm font-medium mb-1">Hero image URL</label>
+        <input type="url" name="hero_image_url" value="{{ event.hero_image_url if event else '' }}" placeholder="https://..." class="w-full px-3 py-2 border border-slate-300 rounded">
+        <p class="text-xs text-slate-500 mt-1">URL paste is a placeholder. Native file upload lands once the backend's presigned-URL flow is wired (decisions.md F1, blocked on Phase E).</p>
     </div>
+
+    <fieldset class="border border-slate-200 rounded p-4 space-y-3">
+        <legend class="px-2 text-sm font-medium">Host</legend>
+        <div>
+            <label class="block text-sm mb-1">Host label</label>
+            <input type="text" name="host_label" required value="{{ event.host_label if event else '' }}" placeholder="e.g. AUTOR" class="w-full px-3 py-2 border border-slate-300 rounded">
+            <p class="text-xs text-slate-500 mt-1">Free-text at v1 (decisions.md Q7). Pending SBL-0031 (Arne) on whether an Organisations table lands at 1.0.</p>
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Host logo URL</label>
+            <input type="url" name="host_logo_url" value="{{ event.host_logo_url if event else '' }}" placeholder="https://..." class="w-full px-3 py-2 border border-slate-300 rounded">
+        </div>
+    </fieldset>
+
+    <fieldset class="border border-slate-200 rounded p-4 space-y-3">
+        <legend class="px-2 text-sm font-medium">Venue</legend>
+        <div>
+            <label class="block text-sm mb-1">Venue name (optional)</label>
+            <input type="text" name="venue_name" value="{{ event.venue_name if event else '' }}" placeholder="e.g. Pumpehuset" class="w-full px-3 py-2 border border-slate-300 rounded">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="block text-sm mb-1">City</label>
+                <input type="text" name="venue_city" required value="{{ event.venue_city if event else '' }}" class="w-full px-3 py-2 border border-slate-300 rounded">
+            </div>
+            <div>
+                <label class="block text-sm mb-1">Country (ISO-3166)</label>
+                <input type="text" name="venue_country" required maxlength="2" value="{{ event.venue_country if event else 'DK' }}" placeholder="DK" class="w-full px-3 py-2 border border-slate-300 rounded uppercase">
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm mb-1">Street address (optional)</label>
+            <textarea name="venue_address" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded">{{ event.venue_address if event else '' }}</textarea>
+        </div>
+    </fieldset>
+
     <div class="grid grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium mb-1">Start</label>
@@ -26,6 +66,13 @@
             <input type="datetime-local" name="end_at" required value="{{ event.end_at.strftime('%Y-%m-%dT%H:%M') if event else '' }}" class="w-full px-3 py-2 border border-slate-300 rounded">
         </div>
     </div>
+
+    <div>
+        <label class="block text-sm font-medium mb-1">Genre tags</label>
+        <input type="text" name="genre_tags" value="{{ event.genre_tags|join(', ') if event else '' }}" placeholder="hip-hop, electronic, jazz" class="w-full px-3 py-2 border border-slate-300 rounded">
+        <p class="text-xs text-slate-500 mt-1">Comma-separated, free-text. Pending SBL-0032 (Mattis) on canonical vocab.</p>
+    </div>
+
     <div class="flex gap-2 pt-2">
         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save</button>
         <a href="{% if event %}/events/{{ event.id }}{% else %}/events{% endif %}" class="px-4 py-2 text-slate-600 hover:text-slate-900">Cancel</a>

@@ -11,21 +11,30 @@
         <thead class="bg-slate-50 text-left text-sm text-slate-600">
             <tr>
                 <th class="px-6 py-3 font-medium">Title</th>
+                <th class="px-6 py-3 font-medium">Host</th>
                 <th class="px-6 py-3 font-medium">Starts</th>
-                <th class="px-6 py-3 font-medium">Location</th>
-                <th class="px-6 py-3 font-medium">Sessions</th>
+                <th class="px-6 py-3 font-medium">Venue</th>
+                <th class="px-6 py-3 font-medium">State</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-200">
             {% for event in events %}
+            {% set s = event.state.value %}
             <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/events/{{ event.id }}'">
                 <td class="px-6 py-3 font-medium">{{ event.title }}</td>
+                <td class="px-6 py-3 text-slate-600">{{ event.host_label }}</td>
                 <td class="px-6 py-3 text-slate-600">{{ event.start_at.strftime("%b %d, %Y · %H:%M") }}</td>
-                <td class="px-6 py-3 text-slate-600">{{ event.location or "—" }}</td>
-                <td class="px-6 py-3 text-slate-600">{{ event.sessions|length }}</td>
+                <td class="px-6 py-3 text-slate-600">{{ event.venue_city }}, {{ event.venue_country }}</td>
+                <td class="px-6 py-3">
+                    <span class="inline-block px-2 py-0.5 rounded text-xs
+                        {% if s == 'cancelled' %}bg-red-100 text-red-700
+                        {% elif s == 'completed' %}bg-slate-100 text-slate-600
+                        {% elif s == 'live' %}bg-green-100 text-green-700
+                        {% else %}bg-blue-100 text-blue-700{% endif %}">{{ s }}</span>
+                </td>
             </tr>
             {% else %}
-            <tr><td colspan="4" class="px-6 py-12 text-center text-slate-500">No events yet.</td></tr>
+            <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">No events yet.</td></tr>
             {% endfor %}
         </tbody>
     </table>

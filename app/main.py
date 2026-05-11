@@ -10,10 +10,9 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.config import settings
 from app.database import Base, engine, get_db
 from app.deps import current_user
-from app.models import Event, Session as EventSession, User
-from app.routers import auth, events, sessions
+from app.models import Event, User
+from app.routers import auth, events
 
-# Create tables on startup (use Alembic for production migrations)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Event Dashboard")
@@ -24,7 +23,6 @@ templates = Jinja2Templates(directory="app/templates")
 
 app.include_router(auth.router)
 app.include_router(events.router)
-app.include_router(sessions.router)
 
 
 @app.get("/")
@@ -36,7 +34,6 @@ def home(request: Request, db: DbSession = Depends(get_db), user: User | None = 
     stats = {
         "event_count": db.query(Event).count(),
         "upcoming_count": db.query(Event).filter(Event.start_at >= now).count(),
-        "session_count": db.query(EventSession).count(),
     }
     recent_events = db.query(Event).order_by(Event.created_at.desc()).limit(5).all()
     return templates.TemplateResponse(
