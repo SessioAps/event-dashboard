@@ -1,15 +1,10 @@
 from datetime import datetime
 from enum import Enum as PyEnum
 
-from sqlalchemy import JSON, Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from app.database import Base
-
-
-class Role(str, PyEnum):
-    admin = "admin"
-    editor = "editor"
 
 
 class EventState(str, PyEnum):
@@ -24,9 +19,18 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=True)
-    role = Column(Enum(Role), default=Role.editor, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class MagicLinkToken(Base):
+    __tablename__ = "magic_link_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    used_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

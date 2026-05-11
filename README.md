@@ -1,63 +1,47 @@
 # Event Dashboard
 
-Web admin tool for Sessio's internal team to seed events for the artist app's launch. v1 internal slice per [`docs/products/admin/prd.md`](../sessio-docs/docs/products/admin/prd.md). Built with FastAPI, SQLAlchemy, Jinja2, HTMX, and Tailwind CSS.
+Web admin tool for Sessio's internal team to seed events for the artist app's launch. v1 internal slice per [`docs/products/admin/prd.md`](../../sessio-docs/docs/products/admin/prd.md) in the sibling sessio-docs repo. Built with FastAPI, SQLAlchemy, Jinja2, HTMX, and Tailwind CSS.
 
-> **Status:** undergoing refactor against the 2026-05-11 decisions in [`docs/products/admin/architecture/decisions.md`](../sessio-docs/docs/products/admin/architecture/decisions.md). Email broadcasts, social auto-posting, public OG event pages, calendar view, and conference-track "sessions" are being removed. Phase B (Event model + state machine), Phase C (magic-link auth), and Phase D (host identity) follow.
+> **Status:** Phases A-C of the 2026-05-11 decisions in [`decisions.md`](../../sessio-docs/docs/products/admin/architecture/decisions.md) are landed. Phase D (Q1 + F1 — backend platform service API client + presigned-URL image upload) is blocked on the backend existing.
 
-## Features (post-Phase-A)
+## Features
 
-- Event CRUD (create, read, update — cancel/state-machine landing in Phase B)
-- Email + password login (replaced with magic-link + allowlist in Phase C)
+- Event CRUD with state machine (`scheduled` → `live` → `completed` / `cancelled`).
+- Magic-link sign-in against an admin-email allowlist (no passwords).
 
 ## Tech stack
 
-| Layer | Choice | Why |
-|---|---|---|
-| Backend | FastAPI | Modern, fast, auto-documented |
-| Database | SQLite (dev) / PostgreSQL (prod) | Zero-setup locally, scalable later |
-| ORM | SQLAlchemy 2.0 | Database-agnostic |
-| Templates | Jinja2 + HTMX | Server-rendered with snappy interactivity, no SPA complexity |
-| Styling | Tailwind CSS | Utility-first, no custom CSS files |
-| Auth | Cookie sessions + bcrypt | Simple and secure for an internal tool |
-| Email | Resend | Easiest modern email API |
+| Layer | Choice |
+|---|---|
+| Backend | FastAPI |
+| Database | SQLite (dev) — placeholder until backend platform service exists |
+| ORM | SQLAlchemy 2.0 |
+| Templates | Jinja2 + HTMX |
+| Styling | Tailwind CSS (CDN) |
+| Auth | Cookie sessions + magic-link tokens |
 
 ## Quick start
 
-### Prerequisites
-
-- Python 3.12 or newer
-- Git
-
-### Setup
-
 ```bash
-# Clone and enter the project
-git clone <repo-url>
-cd event_dashboard
-
-# Create a virtual environment and install dependencies
-# Windows (PowerShell):
+# Windows (PowerShell)
 py -m venv .venv
 .venv\Scripts\Activate.ps1
 py -m pip install -r requirements.txt
 
-# macOS / Linux:
+# macOS / Linux
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Configure environment
-cp .env.example .env
-# Edit .env and set SECRET_KEY at minimum
-
-# Create the first admin user
-python -m scripts.create_admin   # or `py -m scripts.create_admin` on Windows
+# Set the admin allowlist + a session secret
+echo 'ADMIN_EMAILS=julieta@sessio.io,mattis@sessio.io,arne@sessio.io,johannes@sessio.io' >> .env
+echo 'SECRET_KEY=<a-long-random-string>' >> .env
 
 # Run the server
-uvicorn app.main:app --reload    # or `py -m uvicorn app.main:app --reload`
+uvicorn app.main:app --reload
 ```
 
-Open http://localhost:8000 and sign in.
+Open <http://localhost:8000>. Enter an allowlisted email; the magic link prints to the server console (the team grabs it from logs locally). Production deployment needs a real transactional sender swapped into `app/auth.py:send_magic_link`.
 
 ## Project structure
 
@@ -67,27 +51,20 @@ event_dashboard/
 │   ├── main.py              FastAPI entry point
 │   ├── config.py            Settings loaded from .env
 │   ├── database.py          SQLAlchemy engine and session
-│   ├── auth.py              Password hashing and login helpers
-│   ├── deps.py              Auth dependencies (require_login, require_admin)
-│   ├── models/              SQLAlchemy models (User, Event, Session)
-│   ├── routers/             Route handlers grouped by feature
-│   ├── services/            External integrations (email, social)
+│   ├── auth.py              Magic-link token helpers
+│   ├── deps.py              Auth dependencies (require_login)
+│   ├── models/              SQLAlchemy models (User, MagicLinkToken, Event)
+│   ├── routers/             Route handlers (auth, events)
 │   └── templates/           Jinja2 HTML templates
-├── scripts/
-│   └── create_admin.py      Bootstrap the first admin user
 ├── requirements.txt
-├── README.md
-└── .env.example
+└── README.md
 ```
 
 ## Development notes
 
-- Tables are created on startup via `Base.metadata.create_all()`. For
-  production, set up Alembic migrations and remove that call from `main.py`.
-- The Tailwind CSS is loaded from a CDN for simplicity. For production, run
-  a real Tailwind build step.
-- CSRF protection is not yet implemented. Add `fastapi-csrf-protect` before
-  exposing this to untrusted users.
+- Tables are created on startup via `Base.metadata.create_all()`. Once the backend platform service exists, this dashboard reads/writes via that service and the local SQLite goes away (decisions.md Q1).
+- Tailwind CSS is loaded from a CDN. Production = real Tailwind build step.
+- CSRF protection isn't implemented yet. Add `fastapi-csrf-protect` before exposing this beyond localhost.
 
 ## License
 
