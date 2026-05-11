@@ -1,17 +1,13 @@
 # Event Dashboard
 
-A web-based admin dashboard for creating, managing, and promoting events and their sessions. Built with FastAPI, SQLAlchemy, Jinja2, HTMX, and Tailwind CSS.
+Web admin tool for Sessio's internal team to seed events for the artist app's launch. v1 internal slice per [`docs/products/admin/prd.md`](../sessio-docs/docs/products/admin/prd.md). Built with FastAPI, SQLAlchemy, Jinja2, HTMX, and Tailwind CSS.
 
-## Features
+> **Status:** undergoing refactor against the 2026-05-11 decisions in [`docs/products/admin/architecture/decisions.md`](../sessio-docs/docs/products/admin/architecture/decisions.md). Email broadcasts, social auto-posting, public OG event pages, calendar view, and conference-track "sessions" are being removed. Phase B (Event model + state machine), Phase C (magic-link auth), and Phase D (host identity) follow.
 
-- 🔐 Email/password login with admin and editor roles
-- 📅 Event CRUD (create, read, update, delete)
-- 🎤 Inline session management on each event (no page reload, via HTMX)
-- 🗓 Monthly calendar view of all events
-- 🔗 Public, shareable event pages with Open Graph previews
-- 📧 One-click email broadcasts to all users (via Resend)
-- 📣 One-click social posting (LinkedIn working; Twitter/Facebook/Instagram stubbed)
-- 🌐 Native share buttons (Twitter, LinkedIn, Facebook, WhatsApp, email) — no API setup required
+## Features (post-Phase-A)
+
+- Event CRUD (create, read, update — cancel/state-machine landing in Phase B)
+- Email + password login (replaced with magic-link + allowlist in Phase C)
 
 ## Tech stack
 
@@ -81,38 +77,8 @@ event_dashboard/
 │   └── create_admin.py      Bootstrap the first admin user
 ├── requirements.txt
 ├── README.md
-├── SETUP_BROADCASTS.md      Configuring email and social
 └── .env.example
 ```
-
-## Optional features
-
-### Email broadcasts (Resend)
-
-1. Sign up at [resend.com](https://resend.com) and create an API key.
-2. Add to `.env`: `RESEND_API_KEY=re_...`
-3. Restart the server. The "📧 Email all users" button now sends real emails.
-
-See [`SETUP_BROADCASTS.md`](SETUP_BROADCASTS.md) for full details, including verifying your sending domain.
-
-### LinkedIn auto-posting
-
-Requires creating a LinkedIn developer app and generating an access token.
-Full step-by-step in [`SETUP_BROADCASTS.md`](SETUP_BROADCASTS.md).
-
-### Other social platforms
-
-Twitter/X, Facebook, and Instagram are stubbed in `app/services/social/stubs.py`
-with comments explaining each platform's requirements. Implement the same
-interface as `LinkedInPoster` to add a working integration.
-
-## Roles
-
-- **admin**: full access including broadcast features
-- **editor**: can create and edit events, but cannot send emails or post to social
-
-Set a user's role in the database directly, or extend `scripts/create_admin.py`
-to create editor accounts.
 
 ## Development notes
 

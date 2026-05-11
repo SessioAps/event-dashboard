@@ -11,7 +11,7 @@ from app.config import settings
 from app.database import Base, engine, get_db
 from app.deps import current_user
 from app.models import Event, Session as EventSession, User
-from app.routers import auth, broadcast, calendar, events, public, sessions
+from app.routers import auth, events, sessions
 
 # Create tables on startup (use Alembic for production migrations)
 Base.metadata.create_all(bind=engine)
@@ -25,9 +25,6 @@ templates = Jinja2Templates(directory="app/templates")
 app.include_router(auth.router)
 app.include_router(events.router)
 app.include_router(sessions.router)
-app.include_router(broadcast.router)
-app.include_router(calendar.router)
-app.include_router(public.router)
 
 
 @app.get("/")

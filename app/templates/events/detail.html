@@ -23,38 +23,6 @@
 </div>
 {% endif %}
 
-{# Broadcast and sharing actions (admins only) #}
-{% if user.role.value == "admin" %}
-<div class="bg-white rounded-lg border border-slate-200 mb-6 p-6">
-    <h2 class="font-semibold mb-3">Promote this event</h2>
-    <div class="flex flex-wrap gap-2 mb-3">
-        <button hx-post="/events/{{ event.id }}/broadcast-email"
-                hx-target="#broadcast-status"
-                hx-swap="innerHTML"
-                hx-confirm="Send this event to all users by email?"
-                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
-            📧 Email all users
-        </button>
-        <button hx-post="/events/{{ event.id }}/post-social"
-                hx-target="#broadcast-status"
-                hx-swap="innerHTML"
-                hx-confirm="Post this event to all configured social platforms?"
-                class="px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-900 text-sm">
-            📣 Post to social
-        </button>
-        <a href="/events/{{ event.id }}/public" target="_blank"
-           class="px-4 py-2 border border-slate-300 rounded hover:bg-slate-50 text-sm">
-            🔗 Open public page
-        </a>
-    </div>
-    <div id="broadcast-status"></div>
-    <div class="text-xs text-slate-500 mt-3">
-        Public link: <code class="bg-slate-100 px-1 rounded">/events/{{ event.id }}/public</code>
-        — share this anywhere; it has Open Graph previews and share buttons.
-    </div>
-</div>
-{% endif %}
-
 <div class="bg-white rounded-lg border border-slate-200">
     <div class="px-6 py-4 border-b border-slate-200">
         <h2 class="font-semibold">Sessions</h2>
