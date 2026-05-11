@@ -33,7 +33,6 @@ def send_magic_link(email: str, link: str) -> None:
     # (Resend / SMTP) once event_dashboard is deployed for the 4-person team.
     # Locally on a dev machine, the team grabs the link from server logs.
     logger.warning("MAGIC LINK for %s -> %s", email, link)
-    print(f"\n  ✉  Magic link for {email}\n     {link}\n")
 
 
 def consume_magic_link(db: DbSession, token_str: str) -> Optional[MagicLinkToken]:
