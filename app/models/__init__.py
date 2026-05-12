@@ -1,7 +1,18 @@
 from datetime import datetime
 from enum import Enum as PyEnum
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -12,6 +23,12 @@ class EventState(str, PyEnum):
     live = "live"
     completed = "completed"
     cancelled = "cancelled"
+
+
+class OrganisationKind(str, PyEnum):
+    org = "org"
+    publisher = "publisher"
+    label = "label"
 
 
 class User(Base):
@@ -34,6 +51,28 @@ class MagicLinkToken(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class Organisation(Base):
+    __tablename__ = "organisations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    kind = Column(Enum(OrganisationKind), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    country = Column(String, nullable=False)
+    logo_url = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    links = Column(JSON, default=list, nullable=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    created_by = relationship("User")
+
+    __table_args__ = (
+        Index("uq_org_name_country", func.lower(name), country, unique=True),
+    )
+
+
 class Event(Base):
     __tablename__ = "events"
 
@@ -43,7 +82,10 @@ class Event(Base):
 
     hero_image_url = Column(String, nullable=True)
 
-    host_label = Column(String, nullable=False)
+    host_organisation_id = Column(
+        Integer, ForeignKey("organisations.id", ondelete="RESTRICT"), nullable=True, index=True
+    )
+    host_name = Column(String, nullable=False)
     host_logo_url = Column(String, nullable=True)
 
     venue_name = Column(String, nullable=True)
@@ -62,3 +104,4 @@ class Event(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     created_by = relationship("User")
+    host_organisation = relationship("Organisation")

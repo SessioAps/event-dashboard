@@ -24,13 +24,21 @@
     <fieldset class="border border-slate-200 rounded p-4 space-y-3">
         <legend class="px-2 text-sm font-medium">Host</legend>
         <div>
-            <label class="block text-sm mb-1">Host label</label>
-            <input type="text" name="host_label" required value="{{ event.host_label if event else '' }}" placeholder="e.g. AUTOR" class="w-full px-3 py-2 border border-slate-300 rounded">
-            <p class="text-xs text-slate-500 mt-1">Free-text at v1 (decisions.md Q7). Pending SBL-0031 (Arne) on whether an Organisations table lands at 1.0.</p>
-        </div>
-        <div>
-            <label class="block text-sm mb-1">Host logo URL</label>
-            <input type="url" name="host_logo_url" value="{{ event.host_logo_url if event else '' }}" placeholder="https://..." class="w-full px-3 py-2 border border-slate-300 rounded">
+            <label class="block text-sm mb-1">Host organisation</label>
+            {% if host_orgs %}
+            <select name="host_organisation_id" required class="w-full px-3 py-2 border border-slate-300 rounded">
+                <option value="" disabled {% if not event %}selected{% endif %}>— pick an organisation —</option>
+                {% set current = event.host_organisation_id if event else None %}
+                {% for o in host_orgs %}
+                <option value="{{ o.id }}" {% if current == o.id %}selected{% endif %}>{{ o.name }} ({{ o.country }})</option>
+                {% endfor %}
+            </select>
+            <p class="text-xs text-slate-500 mt-1">Picker reads <code>organisations WHERE kind='org'</code> per SBL-0031. To add a new host, go to <a href="/organisations/new" class="text-blue-600">Hub directory → New entry</a> first.</p>
+            {% else %}
+            <div class="p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded">
+                No organisations of kind <b>org</b> exist yet. <a href="/organisations/new" class="text-blue-700 underline">Create one in the Hub directory</a>, then come back to create this event.
+            </div>
+            {% endif %}
         </div>
     </fieldset>
 

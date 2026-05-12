@@ -3,11 +3,12 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import func
 from sqlalchemy.orm import Session as DbSession
 
 from app.database import get_db
 from app.deps import require_login
-from app.models import Event, EventState, User
+from app.models import Event, EventState, Organisation, OrganisationKind, User
 
 router = APIRouter(prefix="/events")
 templates = Jinja2Templates(directory="app/templates")
@@ -17,11 +18,34 @@ def _parse_genre_tags(raw: str) -> list[str]:
     return [t.strip() for t in raw.split(",") if t.strip()]
 
 
+def _host_orgs(db: DbSession) -> list[Organisation]:
+    return (
+        db.query(Organisation)
+        .filter(Organisation.kind == OrganisationKind.org)
+        .order_by(func.lower(Organisation.name))
+        .all()
+    )
+
+
 def _get_event_or_404(db: DbSession, event_id: int) -> Event:
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     return event
+
+
+def _resolve_host(db: DbSession, host_organisation_id: int) -> Organisation:
+    org = (
+        db.query(Organisation)
+        .filter(
+            Organisation.id == host_organisation_id,
+            Organisation.kind == OrganisationKind.org,
+        )
+        .first()
+    )
+    if not org:
+        raise HTTPException(status_code=400, detail="Invalid host organisation")
+    return org
 
 
 @router.get("")
@@ -33,9 +57,10 @@ def list_events(request: Request, db: DbSession = Depends(get_db), user: User = 
 
 
 @router.get("/new")
-def new_event_form(request: Request, user: User = Depends(require_login)):
+def new_event_form(request: Request, db: DbSession = Depends(get_db), user: User = Depends(require_login)):
     return templates.TemplateResponse(
-        "events/form.html", {"request": request, "event": None, "user": user}
+        "events/form.html",
+        {"request": request, "event": None, "user": user, "host_orgs": _host_orgs(db)},
     )
 
 
@@ -45,8 +70,7 @@ def create_event(
     title: str = Form(...),
     description: str = Form(""),
     hero_image_url: str = Form(""),
-    host_label: str = Form(...),
-    host_logo_url: str = Form(""),
+    host_organisation_id: int = Form(...),
     venue_name: str = Form(""),
     venue_city: str = Form(...),
     venue_country: str = Form(...),
@@ -57,12 +81,14 @@ def create_event(
     db: DbSession = Depends(get_db),
     user: User = Depends(require_login),
 ):
+    org = _resolve_host(db, host_organisation_id)
     event = Event(
         title=title,
         description=description or None,
         hero_image_url=hero_image_url or None,
-        host_label=host_label,
-        host_logo_url=host_logo_url or None,
+        host_organisation_id=org.id,
+        host_name=org.name,
+        host_logo_url=org.logo_url,
         venue_name=venue_name or None,
         venue_city=venue_city,
         venue_country=venue_country,
@@ -100,7 +126,8 @@ def edit_event_form(
 ):
     event = _get_event_or_404(db, event_id)
     return templates.TemplateResponse(
-        "events/form.html", {"request": request, "event": event, "user": user}
+        "events/form.html",
+        {"request": request, "event": event, "user": user, "host_orgs": _host_orgs(db)},
     )
 
 
@@ -110,8 +137,7 @@ def update_event(
     title: str = Form(...),
     description: str = Form(""),
     hero_image_url: str = Form(""),
-    host_label: str = Form(...),
-    host_logo_url: str = Form(""),
+    host_organisation_id: int = Form(...),
     venue_name: str = Form(""),
     venue_city: str = Form(...),
     venue_country: str = Form(...),
@@ -123,11 +149,13 @@ def update_event(
     user: User = Depends(require_login),
 ):
     event = _get_event_or_404(db, event_id)
+    org = _resolve_host(db, host_organisation_id)
     event.title = title
     event.description = description or None
     event.hero_image_url = hero_image_url or None
-    event.host_label = host_label
-    event.host_logo_url = host_logo_url or None
+    event.host_organisation_id = org.id
+    event.host_name = org.name
+    event.host_logo_url = org.logo_url
     event.venue_name = venue_name or None
     event.venue_city = venue_city
     event.venue_country = venue_country

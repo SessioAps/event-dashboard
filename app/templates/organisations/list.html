@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Hub directory{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold">Hub directory</h1>
+    <a href="/organisations/new" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ New entry</a>
+</div>
+
+<div class="mb-4 flex gap-2 text-sm">
+    {% for k, label in [(none, 'All'), ('org', 'Orgs'), ('publisher', 'Publishers'), ('label', 'Labels')] %}
+    <a href="{% if k %}/organisations?kind={{ k }}{% else %}/organisations{% endif %}"
+       class="px-3 py-1 rounded {% if active_kind == k %}bg-slate-900 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+<div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-slate-50 text-left text-sm text-slate-600">
+            <tr>
+                <th class="px-6 py-3 font-medium">Name</th>
+                <th class="px-6 py-3 font-medium">Kind</th>
+                <th class="px-6 py-3 font-medium">Country</th>
+                <th class="px-6 py-3 font-medium w-32">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+            {% for org in orgs %}
+            <tr class="hover:bg-slate-50">
+                <td class="px-6 py-3">
+                    <div class="flex items-center gap-3">
+                        {% if org.logo_url %}<img src="{{ org.logo_url }}" alt="" class="w-8 h-8 rounded">{% endif %}
+                        <span class="font-medium">{{ org.name }}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-3 text-slate-600">{{ org.kind.value }}</td>
+                <td class="px-6 py-3 text-slate-600">{{ org.country }}</td>
+                <td class="px-6 py-3 text-sm">
+                    <a href="/organisations/{{ org.id }}/edit" class="text-blue-600 hover:underline">Edit</a>
+                    <form method="post" action="/organisations/{{ org.id }}/delete" class="inline ml-2" onsubmit="return confirm('Delete {{ org.name }}? This fails if any event references it.')">
+                        <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="px-6 py-12 text-center text-slate-500">No entries yet. <a href="/organisations/new" class="text-blue-600">Create one</a>.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
