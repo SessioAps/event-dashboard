@@ -3,6 +3,14 @@
 {% block content %}
 <h1 class="text-2xl font-bold mb-6">{% if event %}Edit event{% else %}New event{% endif %}</h1>
 
+{% if not host_orgs %}
+<div class="max-w-2xl bg-yellow-50 border border-yellow-200 text-yellow-900 p-6 rounded-lg space-y-3">
+    <h2 class="text-lg font-semibold">Create your first organisation</h2>
+    <p class="text-sm">Every event needs a host organisation (e.g. AUTOR, DPA, KODA). The Hub directory has no entries of kind <b>org</b> yet, so this form is hidden until you add one.</p>
+    <p class="text-sm">Go to <a href="/organisations/new" class="text-blue-700 underline font-medium">Hub directory → New entry</a>, create one with kind=<b>Org</b>, then come back to <a href="/events/new" class="text-blue-700 underline">/events/new</a> to create your first event.</p>
+</div>
+{% else %}
+
 <form method="post" action="{% if event %}/events/{{ event.id }}/edit{% else %}/events{% endif %}" class="bg-white p-6 rounded-lg border border-slate-200 space-y-5 max-w-2xl">
 
     <div>
@@ -25,7 +33,6 @@
         <legend class="px-2 text-sm font-medium">Host</legend>
         <div>
             <label class="block text-sm mb-1">Host organisation</label>
-            {% if host_orgs %}
             <select name="host_organisation_id" required class="w-full px-3 py-2 border border-slate-300 rounded">
                 <option value="" disabled {% if not event %}selected{% endif %}>— pick an organisation —</option>
                 {% set current = event.host_organisation_id if event else None %}
@@ -34,11 +41,6 @@
                 {% endfor %}
             </select>
             <p class="text-xs text-slate-500 mt-1">Picker reads <code>organisations WHERE kind='org'</code> per SBL-0031. To add a new host, go to <a href="/organisations/new" class="text-blue-600">Hub directory → New entry</a> first.</p>
-            {% else %}
-            <div class="p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded">
-                No organisations of kind <b>org</b> exist yet. <a href="/organisations/new" class="text-blue-700 underline">Create one in the Hub directory</a>, then come back to create this event.
-            </div>
-            {% endif %}
         </div>
     </fieldset>
 
@@ -86,4 +88,5 @@
         <a href="{% if event %}/events/{{ event.id }}{% else %}/events{% endif %}" class="px-4 py-2 text-slate-600 hover:text-slate-900">Cancel</a>
     </div>
 </form>
+{% endif %}
 {% endblock %}
