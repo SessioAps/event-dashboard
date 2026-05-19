@@ -1,0 +1,26 @@
+{#
+  Reusable file-input partial for hero/logo image uploads.
+  Used by events/form.html and organisations/form.html.
+
+  Params:
+    name           HTML form field name (e.g. "hero_image", "logo")
+    label          Human-readable label (e.g. "Hero image", "Logo")
+    current_url    Optional existing URL to show as a thumbnail (null on create)
+    max_mb         Per-asset max size in MB (10 for hero, 5 for logo per storage.md §4)
+#}
+<div class="space-y-2">
+    <label for="{{ name }}" class="block text-sm font-medium text-slate-700">{{ label }}</label>
+    {% if current_url %}
+    <div class="flex items-center gap-3">
+        <img src="{{ current_url }}" alt="Current {{ label|lower }}" class="h-20 w-20 object-cover rounded border border-slate-200">
+        <span class="text-xs text-slate-500">Upload a new file to replace.</span>
+    </div>
+    {% endif %}
+    <input
+        type="file"
+        id="{{ name }}"
+        name="{{ name }}"
+        accept="image/jpeg,image/png,image/webp"
+        class="block w-full text-sm text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+    <p class="text-xs text-slate-500">JPEG / PNG / WebP. Max {{ max_mb }} MB.</p>
+</div>
