@@ -12,6 +12,7 @@ from app.database import Base, engine, get_db
 from app.deps import current_user
 from app.models import Event, User
 from app.routers import auth, events, organisations
+from app.routers.external import router as external_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -24,6 +25,7 @@ templates = Jinja2Templates(directory="app/templates")
 app.include_router(auth.router)
 app.include_router(events.router)
 app.include_router(organisations.router)
+app.include_router(external_router)
 
 
 @app.get("/")

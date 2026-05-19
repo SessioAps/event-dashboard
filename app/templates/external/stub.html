@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ surface_name }} — External (v2) preview{% endblock %}
+{% block content %}
+<div class="max-w-2xl">
+    <p class="text-xs uppercase tracking-wide text-slate-500 mb-2">External (v2/v3 preview)</p>
+    <h1 class="text-3xl font-bold mb-4">{{ surface_name }}</h1>
+    <p class="text-slate-700 mb-6">{{ surface_description }}</p>
+    <div class="bg-amber-50 border border-amber-200 rounded p-4 text-sm text-amber-900">
+        <strong>Stub.</strong> This surface is part of the external org-admin tool that ships in v2/v3.
+        Internal-now (event seeder + Hub directory) is the only live admin surface at v1.
+    </div>
+    <p class="mt-6 text-sm">
+        <a href="/external/" class="text-slate-600 hover:text-slate-900">← Back to external preview</a>
+    </p>
+</div>
+{% endblock %}

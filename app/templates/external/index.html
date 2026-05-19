@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}External (v2) preview — Event Dashboard{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+    <p class="text-xs uppercase tracking-wide text-slate-500 mb-2">External (v2/v3 preview)</p>
+    <h1 class="text-3xl font-bold mb-4">External org-admin surface</h1>
+    <p class="text-slate-700 mb-6">
+        These five surfaces ship in the external org-admin tool at v2/v3 (per
+        <code>docs/inputs/scope.md</code> §5). At v1 they are stubs only — the internal-now
+        surface (event seeder + Hub directory) is the live admin tool.
+    </p>
+    <ul class="space-y-3">
+        {% for s in surfaces %}
+        <li class="border border-slate-200 rounded p-4 bg-white">
+            <a href="/external/{{ s.slug }}" class="font-semibold text-slate-900 hover:underline">{{ s.name }}</a>
+            <p class="text-sm text-slate-600 mt-1">{{ s.description }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
