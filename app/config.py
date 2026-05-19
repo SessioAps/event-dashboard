@@ -19,6 +19,20 @@ class Settings(BaseSettings):
 
     magic_link_ttl_minutes: int = 15
 
+    # Backend platform service wiring (Phase E — sessio-align-grill decisions.md).
+    # Base URL of the sessio-backend instance the api-client targets.
+    # Required in any environment that exchanges/exercises the api-client.
+    sessio_backend_base_url: str = Field(default="", alias="SESSIO_BACKEND_BASE_URL")
+
+    # Long-lived AdminServiceToken used on POST /v1/admin/auth/exchange only.
+    # Distinct from per-user bearers (which the backend mints in response to
+    # the exchange). Rotation is an env-var swap + backend allowlist sync.
+    sessio_admin_service_token: str = Field(default="", alias="SESSIO_ADMIN_SERVICE_TOKEN")
+
+    # HTTP timeout for outbound backend calls. Conservative default; tighten
+    # once we have real latency numbers.
+    sessio_backend_timeout_seconds: float = 10.0
+
     @property
     def admin_emails(self) -> list[str]:
         return [e.strip().lower() for e in self.admin_emails_csv.split(",") if e.strip()]

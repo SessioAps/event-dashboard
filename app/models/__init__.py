@@ -51,6 +51,23 @@ class MagicLinkToken(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class BearerCache(Base):
+    # Server-side cache of the per-user backend bearer minted by
+    # `adminAuthExchange` (api-conventions.md §1.10). One row per admin user.
+    # Lifecycle:
+    #   1. Magic-link verify → call exchange → upsert row.
+    #   2. Every authenticated api-client call reads this row.
+    #   3. On 401 from backend → invalidate + re-exchange once.
+    # When dashboard.db retires, this collapses into a column on whatever
+    # server-side session row replaces SessionMiddleware.
+    __tablename__ = "bearer_cache"
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    bearer = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
 class Organisation(Base):
     __tablename__ = "organisations"
 
