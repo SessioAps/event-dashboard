@@ -53,6 +53,94 @@ class EventPage(BaseModel):
     prev_cursor: Optional[str] = None
 
 
+# Events — write bodies -------------------------------------------------------
+
+
+class EventCreate(BaseModel):
+    # POST /v1/admin/events body. Hero is uploaded post-create via the
+    # dedicated hero upload-url/confirm pair — hero_image_url at create time
+    # is provided by the caller (typically a placeholder URL when the
+    # workflow starts with the event then uploads the hero).
+    title: str
+    description: str
+    hero_image_url: str
+    start_at: datetime
+    duration_minutes: int = Field(ge=1)
+    venue_address: str
+    venue_city: str
+    venue_country: str = Field(min_length=2, max_length=2)
+    host_organisation_id: Optional[UUID] = None
+    host_name: str
+    host_logo_url: Optional[str] = None
+    genre_tags: list[str] = Field(default_factory=list)
+
+
+class EventUpdate(BaseModel):
+    # PATCH /v1/admin/events/{event_id} body. Every field optional. `state`
+    # is patchable here, but the explicit cancel endpoint
+    # (DELETE → adminEventCancel) is the right path for scheduled→cancelled
+    # transitions; PATCH state is reserved for the rare correction case.
+    title: Optional[str] = None
+    description: Optional[str] = None
+    hero_image_url: Optional[str] = None
+    start_at: Optional[datetime] = None
+    duration_minutes: Optional[int] = Field(default=None, ge=1)
+    venue_address: Optional[str] = None
+    venue_city: Optional[str] = None
+    venue_country: Optional[str] = Field(default=None, min_length=2, max_length=2)
+    host_organisation_id: Optional[UUID] = None
+    host_name: Optional[str] = None
+    host_logo_url: Optional[str] = None
+    genre_tags: Optional[list[str]] = None
+    state: Optional[str] = None
+
+
+# Organisations — full shapes ------------------------------------------------
+
+
+class OrgLink(BaseModel):
+    label: str = Field(max_length=40)
+    url: str
+
+
+class Organisation(BaseModel):
+    id: UUID
+    name: str
+    kind: str
+    country: str = Field(min_length=2, max_length=2)
+    logo_url: Optional[str] = None
+    description: Optional[str] = None
+    links: Optional[list[OrgLink]] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
+class OrganisationPage(BaseModel):
+    items: list[Organisation]
+    next_cursor: Optional[str] = None
+    prev_cursor: Optional[str] = None
+
+
+class OrganisationCreate(BaseModel):
+    # POST /v1/admin/organisations body. logo_url not set here — upload via
+    # the logo upload-url/confirm pair after create.
+    kind: str
+    name: str = Field(max_length=200)
+    country: str = Field(min_length=2, max_length=2)
+    description: Optional[str] = Field(default=None, max_length=2000)
+    links: Optional[list[OrgLink]] = Field(default=None, max_length=10)
+
+
+class OrganisationPatch(BaseModel):
+    # PATCH /v1/admin/organisations/{id} body. All fields optional. logo_url
+    # not patched directly — use logo upload-url/confirm flow.
+    kind: Optional[str] = None
+    name: Optional[str] = Field(default=None, max_length=200)
+    country: Optional[str] = Field(default=None, min_length=2, max_length=2)
+    description: Optional[str] = Field(default=None, max_length=2000)
+    links: Optional[list[OrgLink]] = Field(default=None, max_length=10)
+
+
 # Uploads — presigned-URL pairs ----------------------------------------------
 
 

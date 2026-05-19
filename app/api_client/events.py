@@ -8,7 +8,10 @@ from sqlalchemy.orm import Session as DbSession
 
 from app.api_client._models import (
     ConfirmRequest,
+    Event,
+    EventCreate,
     EventPage,
+    EventUpdate,
     HeroConfirmResponse,
     UploadUrlRequest,
     UploadUrlResponse,
@@ -42,6 +45,51 @@ def admin_event_list(
 
     response = call_with_bearer("GET", "/v1/admin/events", db=db, user=user, params=params)
     return EventPage.model_validate(response.json())
+
+
+def admin_event_get(*, db: DbSession, user: User, event_id: UUID) -> Event:
+    # GET /v1/admin/events/{event_id}
+    response = call_with_bearer(
+        "GET", f"/v1/admin/events/{event_id}", db=db, user=user
+    )
+    return Event.model_validate(response.json())
+
+
+def admin_event_create(*, db: DbSession, user: User, body: EventCreate) -> Event:
+    # POST /v1/admin/events. Idempotency-Key required per api-conventions §6.
+    response = call_with_bearer(
+        "POST",
+        "/v1/admin/events",
+        db=db,
+        user=user,
+        json=body.model_dump(mode="json"),
+        idempotency_key=uuid.uuid4().hex,
+    )
+    return Event.model_validate(response.json())
+
+
+def admin_event_update(
+    *, db: DbSession, user: User, event_id: UUID, body: EventUpdate
+) -> Event:
+    # PATCH /v1/admin/events/{event_id}. Naturally idempotent (PATCH); no
+    # Idempotency-Key required.
+    response = call_with_bearer(
+        "PATCH",
+        f"/v1/admin/events/{event_id}",
+        db=db,
+        user=user,
+        json=body.model_dump(mode="json", exclude_none=True),
+    )
+    return Event.model_validate(response.json())
+
+
+def admin_event_cancel(*, db: DbSession, user: User, event_id: UUID) -> None:
+    # DELETE /v1/admin/events/{event_id} — soft-cancel state transition
+    # (scheduled → cancelled). Backend fires push to RSVPed users per
+    # app/prd §5.6.6. Returns 204.
+    call_with_bearer(
+        "DELETE", f"/v1/admin/events/{event_id}", db=db, user=user
+    )
 
 
 def admin_event_hero_upload_url(

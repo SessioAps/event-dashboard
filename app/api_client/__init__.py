@@ -11,26 +11,43 @@ from app.api_client._models import (
     AdminAuthExchangeRequest,
     ConfirmRequest,
     Event,
+    EventCreate,
     EventPage,
+    EventUpdate,
     FieldError,
     HeroConfirmResponse,
     LogoConfirmResponse,
+    OrgLink,
+    Organisation,
+    OrganisationCreate,
+    OrganisationPage,
+    OrganisationPatch,
     SessionTokenResponse,
     UploadUrlRequest,
     UploadUrlResponse,
 )
-from app.api_client.auth import admin_auth_exchange
+from app.api_client.auth import admin_auth_exchange, eager_exchange_bearer
 from app.api_client.events import (
+    admin_event_cancel,
+    admin_event_create,
+    admin_event_get,
     admin_event_hero_confirm,
     admin_event_hero_upload_url,
     admin_event_list,
+    admin_event_update,
 )
 from app.api_client.organisations import (
+    admin_organisation_create,
+    admin_organisation_delete,
     admin_organisation_logo_confirm,
     admin_organisation_logo_upload_url,
+    admin_organisation_update,
+    organisation_get,
+    organisations_list,
 )
 
 __all__ = [
+    # Errors
     "ApiError",
     "ApiAuthError",
     "EmailNotAllowlisted",
@@ -38,20 +55,41 @@ __all__ = [
     "OrgReferenced",
     "ServiceTokenInvalid",
     "ValidationFailed",
+    # Models
     "AdminAuthExchangeRequest",
     "ConfirmRequest",
     "Event",
+    "EventCreate",
     "EventPage",
+    "EventUpdate",
     "FieldError",
     "HeroConfirmResponse",
     "LogoConfirmResponse",
+    "OrgLink",
+    "Organisation",
+    "OrganisationCreate",
+    "OrganisationPage",
+    "OrganisationPatch",
     "SessionTokenResponse",
     "UploadUrlRequest",
     "UploadUrlResponse",
+    # Auth
     "admin_auth_exchange",
+    "eager_exchange_bearer",
+    # Events
     "admin_event_list",
+    "admin_event_get",
+    "admin_event_create",
+    "admin_event_update",
+    "admin_event_cancel",
     "admin_event_hero_upload_url",
     "admin_event_hero_confirm",
+    # Organisations
+    "organisations_list",
+    "organisation_get",
+    "admin_organisation_create",
+    "admin_organisation_update",
+    "admin_organisation_delete",
     "admin_organisation_logo_upload_url",
     "admin_organisation_logo_confirm",
 ]

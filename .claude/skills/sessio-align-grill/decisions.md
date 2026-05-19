@@ -161,3 +161,20 @@ Plus a private `_put_bytes(upload_url, data, content_type)` that does the direct
 **Updated target state:**
 - `admin-auth` ✅ aligned (was 🟡 partial — lazy-only).
 - Everything else unchanged from the 2026-05-19 run #3 state.
+
+### 2026-05-19 — Julieta solo (impl-side run #5 of sessio-align-grill)
+
+**Trigger:** AB4 patch landed; api-client was the remaining target with significant solo-unblockable work (the 9 op wrappers post-pattern-slice). Pure spec-coverage pass to flip api-client from 🟡 partial (6/15) to ✅ aligned (15/15).
+
+**Patch emitted:**
+- `app/api_client/_models.py` +5 schemas (EventCreate, EventUpdate, OrgLink, Organisation, OrganisationPage, OrganisationCreate, OrganisationPatch).
+- `app/api_client/events.py` +4 wrappers (admin_event_get, admin_event_create, admin_event_update, admin_event_cancel).
+- `app/api_client/organisations.py` +5 wrappers (organisations_list, organisation_get, admin_organisation_create, admin_organisation_update, admin_organisation_delete).
+- `app/api_client/__init__.py` re-exports updated — public surface now covers all 15 admin operationIds.
+
+**No new decisions surfaced.** Each wrapper follows the established pattern (request model → `call_with_bearer` with optional Idempotency-Key on state-creating POSTs → response model). `admin_event_cancel` and `admin_organisation_delete` return `None` on 204; the transport raises ApiError on any 4xx/5xx so these are clean fire-and-forget.
+
+**Updated target state:**
+- `api-client` ✅ aligned (was 🟡 partial 6/15 — now 15/15 covering every admin operationId in api.yaml).
+
+**Remaining partial targets** all depend on SBL-0069 (id-bridge / migration posture): events-list-view, events-create-edit-form, events-cancel-action, hub-directory-list-view, hub-directory-create-edit-form. Nothing else unblockable solo from the spec.
