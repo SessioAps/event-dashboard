@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session as DbSession
 
+from app.api_client.auth import eager_exchange_bearer
 from app.auth import (
     consume_magic_link,
     email_in_allowlist,
@@ -55,6 +56,7 @@ def verify_magic_link(token: str, request: Request, db: DbSession = Depends(get_
 
     user = find_or_create_user(db, consumed.email)
     request.session["user_id"] = user.id
+    eager_exchange_bearer(db=db, user=user)
     return RedirectResponse(url="/", status_code=303)
 
 

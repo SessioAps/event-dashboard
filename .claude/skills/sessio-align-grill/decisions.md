@@ -130,3 +130,34 @@ Plus a private `_put_bytes(upload_url, data, content_type)` that does the direct
 **Open items:**
 1. **Id-bridge grill** — must precede any router rewiring. Likely candidates: (a) `backend_id` column on local rows, populated on first push to backend; (b) full PK migration to UUID v7 (bigger change); (c) defer push integration entirely (read-only via api-client, writes stay local at v1).
 2. **`SessioAps/sessio-backend#1`** — Arne hasn't responded yet. Smoke validation still parked.
+
+## admin-auth AB4 — 2026-05-19 — Julieta
+
+**Spec source:** sessio-docs@957e46b `docs/products/admin/architecture/decisions.md` Session 2026-05-18 (AB4) + Session 2026-05-19 (graceful posture). Mirrors AB1–AB6 ack chain from SBL-0068 resolution.
+
+**Decision (graceful posture):** the eager exchange runs after `find_or_create_user` and before `303 → /`, but **does not block sign-in if it fails**. If `SESSIO_BACKEND_BASE_URL` or `SESSIO_ADMIN_SERVICE_TOKEN` are unset, eager is skipped (info-level log) and the lazy path in `call_with_bearer` handles bearer minting on first api-client call. If env is set but the exchange itself fails (network, 401 `SERVICE_TOKEN_INVALID`, 403 `EMAIL_NOT_ALLOWLISTED`, etc.), the failure is logged at warning-level and login proceeds — the user lands at `/` with no cached bearer; the next api-client call hits the lazy re-exchange path which will surface a usable `ApiError`.
+
+**Why graceful, not strict:**
+- `sessio-backend` is bootstrap-only as of 2026-05-19 (zero application code); strict eager would brick admin login until it ships.
+- Per admin/prd §6, admin tool is launch-supporting, not launch-blocking — login must keep working when backend is down.
+- Most v1 admin work doesn't actually traverse the backend yet (`dashboard.db` remains source of truth pending the SBL-0069 posture pick). A missing bearer at login mostly doesn't block anything until routers are rewired to call api-client wrappers, and even then the lazy path runs the same exchange.
+
+**API shape:** new public helper `eager_exchange_bearer(*, db, user) -> Optional[SessionTokenResponse]` in `app/api_client/auth.py`. Returns the token on success, `None` on any graceful failure (env unset, ApiError, RuntimeError). Caller (currently only `verify_magic_link`) ignores the return value — it's just a best-effort warm-up.
+
+**Patch shape:**
+- `app/api_client/auth.py`: +`eager_exchange_bearer` function (~25 lines incl. imports, logger setup, and the env-check / try-except wrapping).
+- `app/routers/auth.py`: 1 import line + 1 call line in `verify_magic_link`.
+
+**Detection:** `admin-auth` target flips from 🟡 partial to ✅ aligned. AB1–AB6 are now fully executed in event-dashboard. SBL-0068 is structurally honored from the impl side; the resolution body in shared-backlog noted this as "the one execution gap" — that gap is now closed.
+
+### 2026-05-19 — Julieta solo (impl-side run #4 of sessio-align-grill)
+
+**Trigger:** SBL-0068 resolution acks left AB4 as the one execution gap; closing it now while not blocked on Arne.
+
+**Patch emitted:**
+- `app/api_client/auth.py` modified (+30 lines: logger, eager_exchange_bearer, deferred _write_cached_bearer import to mirror the cycle-avoidance pattern already in `_transport.py`).
+- `app/routers/auth.py` modified (+2 lines: import + call site in `verify_magic_link`).
+
+**Updated target state:**
+- `admin-auth` ✅ aligned (was 🟡 partial — lazy-only).
+- Everything else unchanged from the 2026-05-19 run #3 state.
