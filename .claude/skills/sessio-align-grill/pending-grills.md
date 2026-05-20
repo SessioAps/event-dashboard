@@ -4,7 +4,9 @@
 
 ---
 
-## PG-01 — Phase E migration posture (local-int ↔ backend-UUID id-bridge)
+## PG-01 — Phase E migration posture (local-int ↔ backend-UUID id-bridge) — RESOLVED 2026-05-19
+
+**Status:** ✅ Resolved upstream via [SBL-0069](../../../../sessio-docs/docs/shared-backlog.md#sbl-0069) — Arne addendum to `sessio-docs/docs/products/admin/architecture/decisions.md` "Session 2026-05-19 — Arne addendum". **Posture α picked** (defer to post-launch). Cutover triggers + ownership locked there. Body below preserved for audit; no further action needed on this entry.
 
 **Raised:** 2026-05-19 (run #3, image-upload target).
 **Surfaced because:** the image-upload helpers (`upload_event_hero`, `upload_organisation_logo`) take backend UUIDs, but the local SQLAlchemy `Event` / `Organisation` models use integer auto-increment PKs. Every non-list api-client wrapper has the same gap (`adminEventGet/Update/Cancel`, `adminOrganisationCreate/Update/Delete`, the four upload-url/confirm pairs).
