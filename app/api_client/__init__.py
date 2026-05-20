@@ -22,6 +22,9 @@ from app.api_client._models import (
     OrganisationCreate,
     OrganisationPage,
     OrganisationPatch,
+    Report,
+    ReportPage,
+    ReportUpdate,
     SessionTokenResponse,
     UploadUrlRequest,
     UploadUrlResponse,
@@ -45,6 +48,7 @@ from app.api_client.organisations import (
     organisation_get,
     organisations_list,
 )
+from app.api_client.reports import admin_report_update, admin_reports_list
 
 __all__ = [
     # Errors
@@ -70,6 +74,9 @@ __all__ = [
     "OrganisationCreate",
     "OrganisationPage",
     "OrganisationPatch",
+    "Report",
+    "ReportPage",
+    "ReportUpdate",
     "SessionTokenResponse",
     "UploadUrlRequest",
     "UploadUrlResponse",
@@ -92,4 +99,7 @@ __all__ = [
     "admin_organisation_delete",
     "admin_organisation_logo_upload_url",
     "admin_organisation_logo_confirm",
+    # Reports
+    "admin_reports_list",
+    "admin_report_update",
 ]

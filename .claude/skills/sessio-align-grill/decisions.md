@@ -178,3 +178,24 @@ Plus a private `_put_bytes(upload_url, data, content_type)` that does the direct
 - `api-client` ✅ aligned (was 🟡 partial 6/15 — now 15/15 covering every admin operationId in api.yaml).
 
 **Remaining partial targets** all depend on SBL-0069 (id-bridge / migration posture): events-list-view, events-create-edit-form, events-cancel-action, hub-directory-list-view, hub-directory-create-edit-form. Nothing else unblockable solo from the spec.
+
+> **Correction logged 2026-05-20:** "15/15 covering every admin operationId" above was wrong — api.yaml has 17 admin operationIds (the run-#5 inventory missed `adminReportsList` + `adminReportUpdate` at `/v1/admin/reports*`, present in api.yaml at 2b04df00). True state at end of run #5 was 15/17. Closed in the 2026-05-20 grill below.
+
+## api-client (reports coverage) — 2026-05-20 — Julieta
+
+**Spec source:** sessio-docs@23fa0c9 `docs/products/admin/architecture/scaffold-spec.md#api-client`; `docs/products/backend/architecture/api.yaml` lines 2253 (`adminReportsList`) and 2282 (`adminReportUpdate`).
+
+**Decision:** Add `admin_reports_list` and `admin_report_update` wrappers + `Report` / `ReportPage` / `ReportUpdate` Pydantic v2 models. Live in a new `app/api_client/reports.py` module (the layout entry from the original api-client lock foreshadowed this exact module: *"Future addition: `reports.py` if/when admin reports moderation comes into scope"*). Wrappers stay **dormant** — not wired into any router, no admin UI surface. Flips `api-client` from 🟡 partial (15/17) to ✅ aligned (17/17 admin operationIds covered).
+
+**Rationale:** Two-part. (a) Detection rule for the `api-client` target is operationId coverage of current `api.yaml`, independent of whether the routes are exposed as admin UI. Per the same Phase E posture α lock (Arne addendum 2026-05-19), every non-list event/org wrapper is already dormant in the same way; reports fit that posture exactly. (b) Spec carries a scope contradiction surfaced in this grill — `api.yaml` line 2286 description says *"Founder reviews manually at 1.0; full triage flows ship in 1.1 (PRD §5.4.4)"* while `admin/prd.md` §3.3 says *"the tool that acts on those reports lives in a later slice."* Reading reconciled here as: at 1.0 the founder hits the api.yaml endpoints directly (curl/httpie), and the admin tool grows no reports UI; the wrappers exist as forward-investment for the 1.1 admin reports surface. No SBL filed — the contradiction is resolvable by this reading without an upstream lock, and the wrapper-existence cost is ~50 lines that work for either interpretation. If §3.3 ↔ api.yaml needs explicit reconciliation later (e.g. if Mattis or Arne push for a 1.0 admin reports UI after all), file an SBL then; this lock doesn't preclude that follow-up.
+
+**Patch shape (2026-05-20):**
+- `app/api_client/_models.py` +3 schemas (`Report`, `ReportPage`, `ReportUpdate`) at the reports section comment.
+- `app/api_client/reports.py` NEW — 2 wrappers (`admin_reports_list`, `admin_report_update`) following the established events/organisations pattern (`call_with_bearer` for both; PATCH naturally idempotent so no Idempotency-Key on update; pagination params on list mirror `admin_event_list`).
+- `app/api_client/__init__.py` updated — adds the 5 new public symbols to imports and `__all__`.
+
+**Updated target state:**
+- `api-client` ✅ aligned (17/17 admin operationIds in api.yaml).
+
+**Open items unchanged from run #5:**
+- Events/Hub-directory router rewiring still gated on the SBL-0069 posture lock execution (posture α: cutover post-launch as a single clean refactor). Wrappers all dormant.

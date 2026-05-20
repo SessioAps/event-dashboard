@@ -171,6 +171,46 @@ class LogoConfirmResponse(BaseModel):
     logo_url: str
 
 
+# Reports — moderation triage -------------------------------------------------
+#
+# Per admin/prd.md §3.3, the admin UI does not act on reports at 1.0; founder
+# triages via the api.yaml endpoints directly (curl/httpie). These wrappers
+# stay dormant — they exist so the 1.1 admin reports surface has typed
+# client glue when it lands. Scope contradiction with api.yaml line 2286
+# ("Founder reviews manually at 1.0") was raised in the 2026-05-20 grill
+# (see decisions.md) — resolved as B: wrappers exist, no UI.
+
+
+class Report(BaseModel):
+    # Mirrors components/schemas/Report in api.yaml (line 3212).
+    id: UUID
+    reporter_id: UUID
+    target_entity_type: str  # enum: user, event — backend is source of truth
+    target_entity_id: UUID
+    category: str  # enum: spam, harassment, impersonation, inappropriate_content, other
+    note: Optional[str] = None
+    state: str  # enum: submitted, under_review, resolved, dismissed
+    resolution_note: Optional[str] = None
+    created_at: datetime
+    resolved_at: Optional[datetime] = None
+
+
+class ReportPage(BaseModel):
+    items: list[Report]
+    next_cursor: Optional[str] = None
+    prev_cursor: Optional[str] = None
+
+
+class ReportUpdate(BaseModel):
+    # PATCH /v1/admin/reports/{report_id} body. `state` is required by the
+    # spec; `resolution_note` optional (max 2000 chars, internal-only —
+    # not visible to the reporter). The enum on state is left unconstrained
+    # here to match the EventUpdate.state convention: backend is the source
+    # of truth for valid transitions, surfaces 422 on illegal targets.
+    state: str  # enum: under_review, resolved, dismissed (NOT submitted)
+    resolution_note: Optional[str] = Field(default=None, max_length=2000)
+
+
 # Problem envelope ------------------------------------------------------------
 
 
