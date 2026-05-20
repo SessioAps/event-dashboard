@@ -81,3 +81,66 @@
 - This skill's locked decisions log: `decisions.md` (api-client, routing-skeleton, image-upload entries).
 - Upstream mirror (when this pre-grill turns into a locked decision): `sessio-docs/docs/products/admin/architecture/decisions.md` — Julieta + Arne co-owned; updates go via `/sessio-grill` in sessio-docs.
 - The skill that authored this file: `.claude/skills/sessio-align-grill/SKILL.md`.
+
+---
+
+## PG-02 — Admin tool visual polish (post-launch)
+
+**Raised:** 2026-05-20 (run #6, after api-client reports-coverage lock landed).
+**Surfaced because:** Julieta asked about installing HeroUI (React component library). HeroUI doesn't fit the locked Python/FastAPI/Jinja2/HTMX/Tailwind stack — would require a frontend re-stack. Underlying goal (revealed in the grill): admin tool UI feels plain / amateur. HeroUI was the *means* reach; polish is the actual goal.
+**Routes the cross-boundary call to:** Lærke (brand / design language owner). Post-launch only.
+**Recommended pick:** **Defer to post-launch.** Pre-launch focus stays on launch-supporting work per admin/prd §6.
+
+### Spec sources bearing on the decision
+
+- `admin/prd.md` §6 *v1 internal — timing.* "Aim: live and usable by Mattis pre-launch (before 2026-05-31)." Admin tool is **launch-supporting, not launch-blocking**. Audience at 1.0 = ~4 internal people (Mattis + spot-use by Johannes/Arne). Polish bar at 1.0 = "usable", not "pretty".
+- `docs/profiles/laerke.md` — Lærke owns brand voice + design language. Design tokens are partial per [SBL-0007](../../../../sessio-docs/docs/shared-backlog.md#sbl-0007); skill currently falls back to placeholder tokens. Any visual direction for the admin tool eventually routes through her.
+- `admin/architecture/decisions.md` Session 2026-05-11 + 2026-05-15 — **Stack divergence resolved 2026-05-15: no re-stacking.** event_dashboard is locked to Python/FastAPI/Jinja2/HTMX/Tailwind through 1.0. scaffold-spec.md updated to be genuinely stack-neutral; the `app-skeleton` grill-prompt answer is FastAPI. Adding React (HeroUI's requirement) would override that lock.
+- Pre-launch timing: today is 2026-05-20. Scope freeze 2026-05-25 (5 days). TestFlight cut 2026-05-31. Public launch 2026-06-01 (12 days). Pre-launch hours invested in visual polish trade against actual launch-supporting work + any pre-launch fires.
+
+### Four paths considered
+
+#### Path A — Defer to post-launch (**recommended**)
+
+- **Pre-launch:** no visual work. Note in pending-grills (this entry).
+- **Post-launch trigger (2 conditions, both required):** (a) 1.0 launch hardening over (no active pre-launch / launch-week fires), AND (b) Lærke has bandwidth to consult on design direction.
+- **Post-launch shape:** pair with Lærke for ~half-day on minimal token set (colours, spacing, typography) → build small Jinja partial library (`templates/_components/{card,button,badge,form_input,modal}.html`) on Tailwind underneath → retrofit events + organisations screens incrementally.
+- **Why recommended:** matches admin/prd §6 framing directly; doesn't override the 2026-05-15 stack lock; doesn't compete with pre-launch fires; lets Lærke's brand work land first so we don't pick a visual style she has to overrule later.
+
+#### Path B — Minimal Jinja partials now (scoped tight)
+
+- ~half-day, no spec impact: `_components/{card,button,badge,form_input}.html` on Tailwind. Defer modal/dropdown/etc until Lærke ships tokens.
+- **Rejected pre-launch:** pulls scope into the freeze window admin/prd §6 explicitly defers. The 4-person internal audience doesn't justify the trade vs pre-launch fires.
+- **Could be reconsidered** if pre-launch days end up calm and there's clear bandwidth; otherwise stays parked.
+
+#### Path C — Preline CSS via CDN
+
+- Drop a Preline `<script>` into `base.html`; copy-paste prebuilt components per screen. ~2 hrs install + retrofit.
+- **Rejected:** picks a visual style before Lærke has any input; locks in a third-party look-and-feel that may clash with her tokens later. Cost-to-redo is higher than the cost-to-defer.
+
+#### Path D — HeroUI (the original ask)
+
+- React component library. Requires React + Node + bundler. Overrides 2026-05-15 stack lock. Weeks of work to re-stack the frontend half of the repo.
+- **Rejected:** stack lock + pre-launch timing + audience size all align against it. If ever revisited it must go through `/sessio-grill` in sessio-docs first (changes scaffold-spec.md `app-skeleton` answer).
+
+### Trigger conditions for taking this off the shelf
+
+Both required:
+
+1. **1.0 launch hardening complete** — no active pre-launch fires, no launch-week incidents pending, post-launch dust settled. Earliest plausible: ~2026-06-08 (week after launch).
+2. **Lærke bandwidth + token progress** — Lærke confirms she has time to consult on admin-tool visual direction; design tokens (SBL-0007) at minimum partially landed (colours + spacing).
+
+If only (1) lands and not (2): note here, wait for Lærke. Don't pick a style solo.
+
+### What this entry is NOT
+
+- Not a locked decision (would go in `decisions.md`). It's a deferred follow-up.
+- Not a cross-boundary call routing to Arne (architecture). Visual direction is Lærke's lane.
+- Not a stack-change pre-grill. The stack lock from 2026-05-15 stands; this entry presumes it.
+
+### Cross-references
+
+- Stack lock origin: `sessio-docs/docs/products/admin/architecture/decisions.md` Session 2026-05-15 "Stack divergence resolved".
+- Lærke's grill style + ownership: `sessio-docs/docs/profiles/laerke.md`.
+- Design tokens gap: [SBL-0007](../../../../sessio-docs/docs/shared-backlog.md#sbl-0007).
+- The skill that authored this file: `.claude/skills/sessio-align-grill/SKILL.md`.
